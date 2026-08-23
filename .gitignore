@@ -1,0 +1,8 @@
+# 金鑰絕不進 git。setup-mac.sh 會讀同資料夾的 secrets.env，
+# 沒擋的話很容易手滑把 API key 一起 commit 上去。
+secrets.env
+.env
+*.key
+
+# macOS
+.DS_Store

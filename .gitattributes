@@ -1,0 +1,5 @@
+# 這個 repo 的腳本要在 macOS 跑，換行一律 LF。
+# 少了這行，在 Windows 上 clone 會被轉成 CRLF，
+# 拿到 Mac 執行就會噴 bad interpreter: /usr/bin/env bash^M
+* text=auto eol=lf
+*.sh text eol=lf
