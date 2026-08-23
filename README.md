@@ -2,7 +2,7 @@
 
 三步驟裝好 Claude Code CLI 跟四個常用的 MCP，裝完 Claude 就會有開瀏覽器操作（playwright）、抓網頁（firecrawl）、爬 IG／FB（apify）的能力。
 
-> **這支 `setup-mac.sh` 只支援 macOS。** Windows 用戶請改看 [INSTALL-windows.md](INSTALL-windows.md)——沒有對應腳本，改成讓 Claude 直接下指令，效果一樣。
+> **這支 `setup-mac.sh` 只支援 macOS。** Windows 用戶請改用 `setup-windows.ps1`，做法一樣、指令不同，看 [INSTALL-windows.md](INSTALL-windows.md)。
 
 MCP 是給 Claude 外掛能力的東西。
 
