@@ -10,6 +10,8 @@
 #   FIRECRAWL_API_KEY=fc-xxxx APIFY_TOKEN=xxxx ./setup-mac.sh
 #
 # 重跑安全：已經裝好的會跳過，不會重複註冊。
+# 沒有 Node.js 會自動裝一份到 ~/.local/node（現查 nodejs.org 目前的 LTS 版本，
+# 不寫死版本號，不用 sudo）。
 
 # 不用 set -u：macOS 內建的 bash 是 3.2，展開空陣列會被它當成未定義變數直接中止。
 set -o pipefail
@@ -25,6 +27,71 @@ fail()  { printf "  \033[31m✗\033[0m %s\n" "$1"; }
 title() { printf "\n\033[1m%s\033[0m\n" "$1"; }
 
 SKIPPED_NOTES=()
+
+# 裝 Node.js（不用 sudo、不動系統原有的 node）。
+# 不寫死版本號：從官方 https://nodejs.org/dist/index.json 現查目前的 LTS，
+# 這支清單一行一個版本、由新到舊排序，找第一筆 lts 不是 false 的就是現在的
+# LTS，往後 Node.js 出新版也不用回來改這支腳本。查不到或下載失敗就放棄，
+# 讓使用者自己去 nodejs.org 裝，不讓腳本整支中斷。
+install_node() {
+  local ARCH
+  case "$(uname -m)" in
+    arm64)   ARCH="arm64" ;;
+    x86_64)  ARCH="x64" ;;
+    *) fail "不認得的處理器架構：$(uname -m)，改自己去 https://nodejs.org 下載安裝。"; return 1 ;;
+  esac
+
+  echo "  查目前 Node.js LTS 版本..."
+  local LTS_LINE LTS_VERSION
+  LTS_LINE="$(curl -fsSL https://nodejs.org/dist/index.json 2>/dev/null | grep '"version"' | grep -v '"lts":false' | head -1)"
+  LTS_VERSION="$(printf '%s' "$LTS_LINE" | grep -o '"version":"[^"]*"' | cut -d'"' -f4)"
+
+  if [ -z "$LTS_VERSION" ]; then
+    fail "查不到目前的 Node.js LTS 版本（可能是網路問題），改自己去 https://nodejs.org 下載安裝。"
+    return 1
+  fi
+  ok "目前 LTS：$LTS_VERSION"
+
+  local NODE_DIR="$HOME/.local/node"
+  local TARBALL="/tmp/node-${LTS_VERSION}-darwin-${ARCH}.tar.gz"
+  local URL="https://nodejs.org/dist/${LTS_VERSION}/node-${LTS_VERSION}-darwin-${ARCH}.tar.gz"
+
+  echo "  下載 node-${LTS_VERSION}-darwin-${ARCH}..."
+  if ! curl -fsSL "$URL" -o "$TARBALL"; then
+    fail "下載失敗，改自己去 https://nodejs.org 下載安裝。"
+    rm -f "$TARBALL"
+    return 1
+  fi
+
+  mkdir -p "$NODE_DIR"
+  if ! tar -xzf "$TARBALL" -C "$NODE_DIR" --strip-components=1; then
+    fail "解壓縮失敗，改自己去 https://nodejs.org 下載安裝。"
+    rm -f "$TARBALL"
+    return 1
+  fi
+  rm -f "$TARBALL"
+
+  # 立刻生效，讓同一輪後面呼叫 npx 的步驟就用得到，不用重開終端機。
+  export PATH="$NODE_DIR/bin:$PATH"
+
+  local rc
+  case "${SHELL##*/}" in
+    bash) rc="$HOME/.bash_profile" ;;
+    *)    rc="$HOME/.zshrc" ;;
+  esac
+  if [ -f "$rc" ] && grep -q '\.local/node/bin' "$rc" 2>/dev/null; then
+    :
+  elif printf '\n# Claude Code starter：Node.js\nexport PATH="$HOME/.local/node/bin:$PATH"\n' >> "$rc" 2>/dev/null; then
+    SKIPPED_NOTES+=("Node.js 的 PATH 剛寫進 ${rc##*/}，這個終端機視窗還沒吃到，開一個新視窗才會生效。")
+  fi
+
+  if command -v node >/dev/null 2>&1; then
+    ok "Node.js 裝好了：$(node -v)"
+    return 0
+  fi
+  fail "裝完了但這個視窗還找不到 node，重開終端機再試一次。"
+  return 1
+}
 
 # ---------------------------------------------------------------- 1. 前置檢查
 
@@ -57,9 +124,14 @@ if command -v node >/dev/null 2>&1; then
   HAS_NODE=1
   ok "Node $(node -v)"
 else
-  warn "沒有 Node.js。Claude Code 本身不用它，可以繼續裝。"
-  echo "      但 playwright、firecrawl、apify 這三個 MCP 需要 Node，這輪會跳過。"
-  echo "      之後想補：到 https://nodejs.org 裝 LTS 版，再跑一次這支腳本。"
+  echo "  沒有 Node.js，playwright/firecrawl/apify 這三個 MCP 需要它，現在幫你裝一份"
+  echo "  （裝在 ~/.local/node，不用 sudo、不動系統本來有的任何東西）..."
+  if install_node; then
+    HAS_NODE=1
+  else
+    warn "Node.js 自動安裝沒成功，playwright/firecrawl/apify 這三個 MCP 這輪會跳過。"
+    SKIPPED_NOTES+=("Node.js 沒裝成功。到 https://nodejs.org 手動下載 LTS 版裝好，再跑一次這支腳本就會補上 playwright/firecrawl/apify。")
+  fi
 fi
 
 # ---------------------------------------------------------------- 2. Claude Code
@@ -248,9 +320,7 @@ if [ "$HAS_NODE" = "1" ]; then
   fi
 
 else
-  warn "playwright、firecrawl、apify（這台沒有 Node.js，跳過）"
-  SKIPPED_NOTES+=("playwright、firecrawl、apify 三個沒裝，因為這台沒有 Node.js。
-     到 https://nodejs.org 裝 LTS 版，然後重跑這支腳本就會補上。")
+  warn "playwright、firecrawl、apify（沒有 Node.js，跳過）"
 fi
 
 # --- hosted ---

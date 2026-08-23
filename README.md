@@ -1,6 +1,6 @@
 # Mac 上裝 Claude Code
 
-四步驟裝好 Claude Code CLI 跟四個常用的 MCP，裝完 Claude 就會有開瀏覽器操作（playwright）、抓網頁（firecrawl）、爬 IG／FB（apify）的能力。
+三步驟裝好 Claude Code CLI 跟四個常用的 MCP，裝完 Claude 就會有開瀏覽器操作（playwright）、抓網頁（firecrawl）、爬 IG／FB（apify）的能力。
 
 > **這支 `setup-mac.sh` 只支援 macOS。** Windows 用戶請改看 [INSTALL-windows.md](INSTALL-windows.md)——沒有對應腳本，改成讓 Claude 直接下指令，效果一樣。
 
@@ -12,7 +12,7 @@ MCP 是給 Claude 外掛能力的東西。
 
 一台 macOS 13 以上的 Mac，還有**付費的 Claude 帳號**。Pro、Max、Team、Enterprise 都可以，免費方案不能用 Claude Code。這點先確認，不然裝完會卡在登入那步。
 
-Claude Code 本身裝的是原生執行檔，不需要 Node.js。但要用到的 `playwright`、`firecrawl`、`apify` 這三個 MCP 都靠 Node 啟動，所以下面把裝 Node.js 排進正式步驟——這步不能跳，跳了這三個 MCP 就裝不起來。
+Claude Code 本身裝的是原生執行檔，不需要 Node.js；`playwright`、`firecrawl`、`apify` 這三個 MCP 才需要它，但這步不用你自己動手——沒有 Node 的話下面的腳本會自動幫你裝一份（裝在 `~/.local/node`，不用 sudo、不動系統本來有的東西），不用你先去 nodejs.org 下載。
 
 ## 第一步：裝 VS Code
 
@@ -28,11 +28,7 @@ curl -fsSL https://claude.ai/install.sh | bash
 
 裝完打 `claude --version`，看到版本號就對了。
 
-## 第三步：裝 Node.js
-
-到 <https://nodejs.org> 下載 LTS 版（左邊那顆綠色按鈕），雙擊安裝檔一路照著裝。裝完在終端機打 `node -v`，看到版本號就對了。
-
-## 第四步：跑安裝腳本
+## 第三步：跑安裝腳本
 
 同一個終端機貼上這一行，按 Enter：
 
@@ -40,7 +36,7 @@ curl -fsSL https://claude.ai/install.sh | bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neuracreate/claude-code-starter/main/setup-mac.sh)"
 ```
 
-它會發現 Claude Code 跟 Node.js 都裝過了，跳過那兩步，直接去裝四個 MCP、放一份協作規則。跑到一半會問金鑰，**Firecrawl 跟 Apify 這兩把不要跳過**——要抓網頁、爬 IG／FB 就是靠它們，跳過的話那兩個 MCP 裝是裝了，但沒有金鑰用不了。
+它會發現 Claude Code 裝過了，跳過那步；沒有 Node.js 的話會自動查目前最新的 LTS 版本並裝好（不寫死版本號，之後 Node.js 出新版也不用回來改這支腳本），接著裝四個 MCP、放一份協作規則。跑到一半會問金鑰，**Firecrawl 跟 Apify 這兩把不要跳過**——要抓網頁、爬 IG／FB 就是靠它們，跳過的話那兩個 MCP 裝是裝了，但沒有金鑰用不了。
 
 重跑不會壞。已經裝好的它會跳過。
 
@@ -132,7 +128,7 @@ Notion、Gmail、Google Drive、Canva、Supabase 這些不用裝。它們綁的�
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
 ```
 
-**裝完 Node.js，打 `node -v` 說 command not found。** 同樣是要重開終端機才會生效，關掉重開一個再試。
+**腳本幫我裝了 Node.js，但打 `node -v` 說 command not found。** 同樣是 PATH 要重開終端機才會生效，關掉重開一個再試。
 
 **想確認到底裝對了沒。** 跑 `claude doctor`，它會印出安裝狀態跟設定檔的問題，不會開啟對話。
 
