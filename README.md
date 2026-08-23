@@ -2,12 +2,11 @@
 
 四步驟裝好 Claude Code CLI 跟四個常用的 MCP，裝完 Claude 就會有開瀏覽器操作（playwright）、抓網頁（firecrawl）、爬 IG／FB（apify）的能力。
 
-> **這個 repo 目前只支援 macOS。** Windows 請直接照官方文件裝，這裡的腳本在 Windows 上跑不起來：
-> 開 PowerShell 貼 `irm https://claude.ai/install.ps1 | iex`，裝完再自己一個一個 `claude mcp add`。
+> **這支 `setup-mac.sh` 只支援 macOS。** Windows 用戶請改看 [INSTALL-windows.md](INSTALL-windows.md)——沒有對應腳本，改成讓 Claude 直接下指令，效果一樣。
 
 MCP 是給 Claude 外掛能力的東西。
 
-**完全不寫程式、直接把整個安裝過程交給 Claude 做的話，看 [INSTALL.md](INSTALL.md)。** 下面這份是自己在終端機貼指令跑的版本。
+**完全不寫程式、直接把整個安裝過程交給 Claude 做的話，看 [INSTALL.md](INSTALL.md)（Mac）或 [INSTALL-windows.md](INSTALL-windows.md)（Windows）。** 下面這份是自己在終端機貼指令跑的 Mac 版本。
 
 ## 開始前要有
 
