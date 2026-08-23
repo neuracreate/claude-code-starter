@@ -28,28 +28,21 @@ claude
 
 ## 4. 貼上這一整段話，按 Enter
 
-登入完，把下面這一整段複製貼進對話框：
+登入完，把下面這一段複製貼進對話框：
 
 ```
-我要幫這台 Mac 補齊 Claude Code 的擴充能力，照下面順序做，每步做完跟我講結果：
-
-1. 跑 node -v 確認 Node.js 有沒有裝好。沒有的話停下來告訴我，我會先去 https://nodejs.org 下載 LTS 版裝好再回來繼續，你先不要往下做。
-2. 跑 curl -fsSL https://raw.githubusercontent.com/neuracreate/claude-code-starter/main/setup-mac.sh -o ~/setup-mac.sh 把安裝腳本抓下來，讀過一遍，用你自己的話跟我講這支腳本大概會做什麼。
-3. 問我：有沒有 Firecrawl API key（沒有可以先去 https://firecrawl.dev 拿）、有沒有 Apify token（沒有可以先去 https://console.apify.com 拿）。這兩把金鑰決定你能不能幫我抓網頁跟爬 IG/FB，我可以當場給你，也可能先跳過。
-4. 用我的回答執行這一行（我沒給的那把金鑰就整段不要放進去）：
-   FIRECRAWL_API_KEY=剛剛給的值 APIFY_TOKEN=剛剛給的值 bash ~/setup-mac.sh
-5. 全部做完跑 claude mcp list，用白話（不要術語）告訴我哪些是綠燈、哪些還沒接上、我還要做什麼。
+我要幫這台 Mac 補齊 Claude Code 的擴充能力，跑 curl -fsSL https://raw.githubusercontent.com/neuracreate/claude-code-starter/main/setup-mac.sh -o ~/setup-mac.sh 抓下來後直接執行，過程缺什麼、需要問我什麼都直接問，全部做完跟我講結果。
 ```
 
 ## 中途會遇到什麼
 
 **Claude 會跳出「要不要允許執行這個指令」的提示。** 選允許（Allow）就好，這是正常的安全機制，不是壞掉。
 
-**沒有 Firecrawl 或 Apify 金鑰也沒關係，先跳過。** 之後想補，直接跟 Claude 說「幫我補 Firecrawl 的金鑰」，把金鑰貼給它就行，不用重跑整支腳本。
+**Claude 會問你有沒有 Node.js、有沒有 Firecrawl／Apify 金鑰。** 這是腳本自己偵測到缺什麼才問的，不是它多事。沒有金鑰就說先跳過，其他還是裝得起來；沒有 Node.js 就照它給的網址（nodejs.org）去裝，裝完跟它說一聲讓它繼續。
 
-## 為什麼要用「貼一段話」而不是直接貼指令
+## 為什麼貼的話這麼短，還能完整跑完
 
-因為 Claude 執行指令時背後接的不是你平常打字的那種終端機，腳本裡「問金鑰」那段偵測到這件事會自動跳過、不問。上面這段話把「問金鑰」的工作從腳本手上換給 Claude 直接用中文問你，再由 Claude 把答案用環境變數帶進腳本，這兩把金鑰就不會被漏掉。
+問金鑰、判斷 Node.js 在不在、跳過什麼、該怎麼補——這些判斷都寫進 `setup-mac.sh` 自己的輸出訊息裡了，不是靠這段話一步步交代。Claude 執行指令時背後接的不是真人在打字的那種終端機，腳本偵測到這件事會在畫面上直接印出「如果是 Claude 代跑，該問什麼、該怎麼重跑」，Claude 讀到這段輸出就知道下一步怎麼做，不需要每次都在對話框寫一長串步驟。
 
 ## 想自己在終端機貼指令跑（進階，不想透過對話）
 

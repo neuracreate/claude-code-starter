@@ -37,12 +37,17 @@ fi
 command -v curl >/dev/null 2>&1 || { fail "找不到 curl，沒辦法下載安裝程式。"; exit 1; }
 ok "curl"
 
-# 用 `curl ... | bash` 跑的話，腳本自己會佔住 stdin，問金鑰跟授權那兩段會靜默跳過，
-# 使用者卻以為裝完整了。先講清楚，別讓它默默降級。
+# 用 `curl ... | bash` 跑的話、或被 Claude 用 Bash 工具代跑的話，腳本自己會佔住
+# stdin，問金鑰那段會靜默跳過，使用者卻以為裝完整了。先講清楚，別讓它默默降級。
 if [ ! -t 0 ]; then
-  warn "非互動模式（stdin 不是終端機），問金鑰與瀏覽器授權都會自動跳過。"
-  echo "      要完整流程請改用這個寫法（注意是 bash -c，不是 | bash）："
+  warn "非互動模式（stdin 不是終端機），問金鑰那段會自動跳過。"
+  echo "      如果是真人在終端機貼指令，改用這個寫法（注意是 bash -c，不是 | bash）："
   echo '      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/neuracreate/claude-code-starter/main/setup-mac.sh)"'
+  echo "      如果是 Claude 代跑這支腳本：先問使用者有沒有 Firecrawl API key"
+  echo "      （https://firecrawl.dev）跟 Apify token（https://console.apify.com），"
+  echo "      拿到答案後用環境變數重跑一次（沒有的那把就不用放進去）："
+  echo '      FIRECRAWL_API_KEY=xxx APIFY_TOKEN=xxx bash ~/setup-mac.sh'
+  echo "      使用者說先跳過也沒關係，其他 MCP 一樣裝得起來。"
 fi
 
 # Node.js 不是 Claude Code 的必要條件，官方安裝程式裝的是原生執行檔。
